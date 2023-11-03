@@ -7,7 +7,9 @@ WORKDIR /usr/src/router
 # Update our build image and install required packages
 RUN apt-get update && \
     apt-get -y install  \
+      clang \
       cmake \
+      mold \
       nodejs \
       npm \
       protobuf-compiler && \
