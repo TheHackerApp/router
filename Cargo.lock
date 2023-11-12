@@ -1521,6 +1521,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "context"
+version = "0.3.2"
+source = "registry+ssh://git@ssh.shipyard.rs/wafflehacks/crate-index.git"
+checksum = "24f32924b797aa6bbed5a7f964b67095182e3a3c36d54e7ebc96e26e97710d58"
+dependencies = [
+ "axum",
+ "headers",
+ "http",
+ "serde",
+]
+
+[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4720,7 +4732,9 @@ dependencies = [
  "anyhow",
  "apollo-router",
  "async-trait",
+ "context",
  "futures",
+ "headers",
  "reqwest",
  "schemars",
  "serde",
@@ -4728,6 +4742,7 @@ dependencies = [
  "tokio",
  "tower",
  "tracing",
+ "url",
 ]
 
 [[package]]

@@ -2,6 +2,9 @@
 xtask = "run --package xtask --"
 router = "run --package xtask -- router"
 
+[registries.wafflehacks]
+index = "ssh://git@ssh.shipyard.rs/wafflehacks/crate-index.git"
+
 [target.x86_64-unknown-linux-gnu]
 linker = "clang"
 rustflags = ["-C", "link-arg=-fuse-ld=mold"]
