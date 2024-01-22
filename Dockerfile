@@ -1,5 +1,5 @@
 # Use the rust build image from docker as our base
-FROM rust:1.72.0 as base
+FROM rust:1.75.0 as base
 
 # Set our working directory for the build
 WORKDIR /usr/src/router
