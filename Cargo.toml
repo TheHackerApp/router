@@ -17,18 +17,15 @@ path = "src/main.rs"
 anyhow.workspace = true
 apollo-router = { git = "ssh://git@github.com/TheHackerApp/apollo-router.git", branch = "main" }
 async-trait = "0.1"
-context = { version = "0.3.2", registry = "wafflehacks" }
-futures = "0.3"
-headers = "0.3"
-reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls-native-roots"] }
+context = { version = "0.4", features = ["headers"], registry = "wafflehacks" }
+http = "0.2"
 schemars = "0.8"
 serde = "1"
-serde_json = "1"
 tower = { version = "0.4", default-features = false }
 tracing = "0.1"
-url = { version = "2.4", features = ["serde"] }
 
 [dev-dependencies]
+serde_json = "1"
 tokio = { version = "1", features = ["macros"] }
 
 [workspace.dependencies]
