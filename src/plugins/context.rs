@@ -66,21 +66,23 @@ impl Plugin for Context {
 
     fn subgraph_service(&self, _name: &str, service: subgraph::BoxService) -> subgraph::BoxService {
         ServiceBuilder::new()
-            .checkpoint(|mut req: subgraph::Request| {
+            .map_request(|mut req: subgraph::Request| {
                 let user = req
                     .context
-                    .get::<_, user::Context>(USER_CONTEXT_KEY)?
+                    .get::<_, user::Context>(USER_CONTEXT_KEY)
+                    .expect("user context must be deserializable")
                     .expect("user context must be present");
                 let scope = req
                     .context
-                    .get::<_, scope::Context>(SCOPE_CONTEXT_KEY)?
+                    .get::<_, scope::Context>(SCOPE_CONTEXT_KEY)
+                    .expect("scope context must be deserializable")
                     .expect("scope context must be present");
 
                 let headers = req.subgraph_request.headers_mut();
                 user.write_headers(headers);
                 scope.write_headers(headers);
 
-                Ok(ControlFlow::Continue(req))
+                req
             })
             .service(service)
             .boxed()
