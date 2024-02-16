@@ -6,7 +6,7 @@ use apollo_router::{
     register_plugin,
     services::{subgraph, supergraph},
 };
-use context::{scope, user};
+use context::{Scope, User};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use std::ops::ControlFlow;
@@ -42,13 +42,13 @@ impl Plugin for Context {
         ServiceBuilder::new()
             .checkpoint(|req: supergraph::Request| {
                 let headers = req.supergraph_request.headers();
-                let user = match user::Context::try_from(headers) {
+                let user = match User::try_from(headers) {
                     Ok(user) => user,
                     Err(e) => {
                         return Ok(ControlFlow::Break(responses::invalid(req, e.to_string())?));
                     }
                 };
-                let scope = match scope::Context::try_from(headers) {
+                let scope = match Scope::try_from(headers) {
                     Ok(scope) => scope,
                     Err(e) => {
                         return Ok(ControlFlow::Break(responses::invalid(req, e.to_string())?));
@@ -69,12 +69,12 @@ impl Plugin for Context {
             .map_request(|mut req: subgraph::Request| {
                 let user = req
                     .context
-                    .get::<_, user::Context>(USER_CONTEXT_KEY)
+                    .get::<_, User>(USER_CONTEXT_KEY)
                     .expect("user context must be deserializable")
                     .expect("user context must be present");
                 let scope = req
                     .context
-                    .get::<_, scope::Context>(SCOPE_CONTEXT_KEY)
+                    .get::<_, Scope>(SCOPE_CONTEXT_KEY)
                     .expect("scope context must be deserializable")
                     .expect("scope context must be present");
 

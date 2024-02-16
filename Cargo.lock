@@ -1265,9 +1265,9 @@ dependencies = [
 
 [[package]]
 name = "context"
-version = "0.4.4"
+version = "0.5.1"
 source = "registry+ssh://git@ssh.shipyard.rs/wafflehacks/crate-index.git"
-checksum = "53275785dbb731ecbc7bf1c96db32bfc63d699e1fda23e758e7d675998e80655"
+checksum = "b9a3150c37ba2b09a178f32f4d9572f417d0a4027c81b923f382a6536833be62"
 dependencies = [
  "headers",
  "http 0.2.11",
@@ -4496,6 +4496,7 @@ dependencies = [
  "async-trait",
  "context",
  "futures",
+ "headers",
  "http 0.2.11",
  "hyper",
  "hyper-rustls",
@@ -4512,6 +4513,7 @@ dependencies = [
  "tracing",
  "tracing-opentelemetry",
  "trust-dns-resolver",
+ "url",
 ]
 
 [[package]]
