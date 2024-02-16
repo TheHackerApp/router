@@ -76,9 +76,9 @@ impl Plugin for Context {
                     .get::<_, scope::Context>(SCOPE_CONTEXT_KEY)?
                     .expect("scope context must be present");
 
-                let mut headers = req.subgraph_request.headers_mut();
-                user.write_headers(&mut headers);
-                scope.write_headers(&mut headers);
+                let headers = req.subgraph_request.headers_mut();
+                user.write_headers(headers);
+                scope.write_headers(headers);
 
                 Ok(ControlFlow::Continue(req))
             })
