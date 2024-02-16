@@ -16,13 +16,24 @@ path = "src/main.rs"
 [dependencies]
 anyhow.workspace = true
 apollo-router = { git = "ssh://git@github.com/TheHackerApp/apollo-router.git", branch = "main" }
+async-compression = { version = "0.4", features = ["tokio", "brotli", "gzip", "deflate"] }
 async-trait = "0.1"
 context = { version = "0.4", features = ["headers"], registry = "wafflehacks" }
+futures = "0.3"
 http = "0.2"
+hyper = { version = "0.14", features = ["client"] }
+hyper-rustls = { version = "0.24", features = ["http1", "http2"] }
+opentelemetry-http = "0.9"
+opentelemetry_api = "0.20.0"
+pin-project-lite = "0.2"
+rustls = "0.21"
 schemars = "0.8"
 serde = "1"
 tower = { version = "0.4", default-features = false }
+tower-http = { version = "0.4", features = ["compression-br", "compression-deflate", "compression-gzip", "decompression-br", "decompression-deflate", "decompression-gzip"] }
 tracing = "0.1"
+tracing-opentelemetry = "0.21"
+trust-dns-resolver = "0.23.2"
 
 [dev-dependencies]
 serde_json = "1"
