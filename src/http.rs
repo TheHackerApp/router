@@ -9,10 +9,7 @@ use futures::{
     Stream,
 };
 use http::header::{HeaderMap, HeaderValue, ACCEPT_ENCODING, CONTENT_ENCODING};
-use hyper::{
-    body::{Body, Bytes},
-    client::HttpConnector,
-};
+use hyper::{body::Bytes, client::HttpConnector};
 use hyper_rustls::{ConfigBuilderExt, HttpsConnector};
 use opentelemetry_api::global::get_text_map_propagator;
 use pin_project_lite::pin_project;
@@ -24,6 +21,8 @@ use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 mod resolver;
 
+pub use hyper::Body;
+
 static ACCEPTED_ENCODINGS: HeaderValue = HeaderValue::from_static("gzip, br, deflate");
 
 type HttpClient =
@@ -32,6 +31,28 @@ type HttpClient =
 pub struct Request {
     pub context: Context,
     pub request: http::Request<Body>,
+}
+
+pub trait RequestBuilderExt {
+    /// Create a new request with a body
+    fn body_with_context(self, body: Body, context: Context) -> Result<Request, http::Error>;
+
+    /// Create a new request with an empty body
+    fn context(self, context: Context) -> Result<Request, http::Error>
+    where
+        Self: Sized,
+    {
+        self.body_with_context(Body::empty(), context)
+    }
+}
+
+impl RequestBuilderExt for http::request::Builder {
+    fn body_with_context(self, body: Body, context: Context) -> Result<Request, http::Error> {
+        Ok(Request {
+            context,
+            request: self.body(body)?,
+        })
+    }
 }
 
 pub struct Response {

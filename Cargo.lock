@@ -222,7 +222,7 @@ dependencies = [
 [[package]]
 name = "apollo-router"
 version = "1.40.0"
-source = "git+ssh://git@github.com/TheHackerApp/apollo-router.git?branch=main#6e3c095bcb5aa054de779a9314b53b00c2459356"
+source = "git+ssh://git@github.com/TheHackerApp/apollo-router.git?branch=main#c2038983fefd2781f38708443318cb308bac9a69"
 dependencies = [
  "access-json",
  "anyhow",
@@ -361,7 +361,7 @@ dependencies = [
 [[package]]
 name = "apollo-router-scaffold"
 version = "1.40.0"
-source = "git+ssh://git@github.com/TheHackerApp/apollo-router.git?branch=main#6e3c095bcb5aa054de779a9314b53b00c2459356"
+source = "git+ssh://git@github.com/TheHackerApp/apollo-router.git?branch=main#c2038983fefd2781f38708443318cb308bac9a69"
 dependencies = [
  "anyhow",
  "cargo-scaffold",

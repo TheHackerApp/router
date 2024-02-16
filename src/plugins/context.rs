@@ -1,5 +1,5 @@
 use super::error::PluginDisabledError;
-use crate::responses;
+use crate::responses::Responder;
 use apollo_router::{
     layers::ServiceBuilderExt,
     plugin::{Plugin, PluginInit},
@@ -45,13 +45,13 @@ impl Plugin for Context {
                 let user = match User::try_from(headers) {
                     Ok(user) => user,
                     Err(e) => {
-                        return Ok(ControlFlow::Break(responses::invalid(req, e.to_string())?));
+                        return Ok(ControlFlow::Break(req.respond_invalid(e.to_string())?));
                     }
                 };
                 let scope = match Scope::try_from(headers) {
                     Ok(scope) => scope,
                     Err(e) => {
-                        return Ok(ControlFlow::Break(responses::invalid(req, e.to_string())?));
+                        return Ok(ControlFlow::Break(req.respond_invalid(e.to_string())?));
                     }
                 };
 
