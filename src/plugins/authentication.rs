@@ -6,7 +6,7 @@ use apollo_router::{
     layers::ServiceBuilderExt,
     plugin::{Plugin, PluginInit},
     register_plugin,
-    services::router,
+    services::{router, subgraph},
 };
 use context::{
     headers::{EventDomain, EventSlug},
@@ -115,6 +115,34 @@ impl Plugin for Authentication {
 
         ServiceBuilder::new()
             .oneshot_checkpoint_async(handler)
+            .service(service)
+            .boxed()
+    }
+
+    fn subgraph_service(
+        &self,
+        _subgraph_name: &str,
+        service: subgraph::BoxService,
+    ) -> subgraph::BoxService {
+        ServiceBuilder::new()
+            .map_request(|mut req: subgraph::Request| {
+                let user = req
+                    .context
+                    .get::<_, User>(AUTHENTICATION_USER_CONTEXT_KEY)
+                    .expect("user context must be deserializable")
+                    .expect("user context must be present");
+                let scope = req
+                    .context
+                    .get::<_, Scope>(AUTHENTICATION_SCOPE_CONTEXT_KEY)
+                    .expect("scope context must be deserializable")
+                    .expect("scope context must be present");
+
+                let headers = req.subgraph_request.headers_mut();
+                user.write_headers(headers);
+                scope.write_headers(headers);
+
+                req
+            })
             .service(service)
             .boxed()
     }

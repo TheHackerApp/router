@@ -2000,18 +2000,6 @@
               "format": "uri"
             }
           }
-        },
-        "thehackerapp.context": {
-          "type": "object",
-          "required": [
-            "enabled"
-          ],
-          "properties": {
-            "enabled": {
-              "description": "Whether the plugin is enabled",
-              "type": "boolean"
-            }
-          }
         }
       },
       "additionalProperties": false
