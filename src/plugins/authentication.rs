@@ -17,6 +17,7 @@ use headers::{
     HeaderMapExt,
 };
 use http::Method;
+use hyper::body::Buf;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use std::{ops::ControlFlow, sync::Arc};
@@ -89,12 +90,21 @@ impl Plugin for Authentication {
                     .await?;
                 req.context = context;
 
-                let headers = response.headers();
-                match Scope::try_from(headers) {
+                let (parts, body) = response.into_parts();
+                if !parts.status.is_success() {
+                    let bytes = hyper::body::aggregate(body).await?;
+                    let response = serde_json::from_reader::<_, ApiError>(bytes.reader())?;
+
+                    return Ok(ControlFlow::Break(
+                        req.respond(response.message, parts.status)?,
+                    ));
+                }
+
+                match Scope::try_from(&parts.headers) {
                     Ok(s) => req.context.insert(AUTHENTICATION_SCOPE_CONTEXT_KEY, s)?,
                     Err(e) => return Ok(ControlFlow::Break(req.respond_invalid(e.to_string())?)),
                 };
-                match User::try_from(headers) {
+                match User::try_from(&parts.headers) {
                     Ok(u) => req.context.insert(AUTHENTICATION_USER_CONTEXT_KEY, u)?,
                     Err(e) => return Ok(ControlFlow::Break(req.respond_invalid(e.to_string())?)),
                 };
@@ -108,4 +118,9 @@ impl Plugin for Authentication {
             .service(service)
             .boxed()
     }
+}
+
+#[derive(Debug, Deserialize)]
+struct ApiError {
+    message: String,
 }

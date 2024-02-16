@@ -65,7 +65,7 @@ where
     graphql::Error::builder()
         .message(message)
         .extension_code(match code {
-            StatusCode::BAD_REQUEST => "BAD_REQUEST",
+            StatusCode::BAD_REQUEST | StatusCode::UNPROCESSABLE_ENTITY => "BAD_REQUEST",
             StatusCode::INTERNAL_SERVER_ERROR => "INTERNAL_ERROR",
             _ => "UNKNOWN",
         })
