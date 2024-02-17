@@ -2000,6 +2000,50 @@
               "format": "uri"
             }
           }
+        },
+        "thehackerapp.proxy": {
+          "type": "object",
+          "required": [
+            "listen",
+            "routes"
+          ],
+          "properties": {
+            "listen": {
+              "description": "The address where the proxy should listen. You'll likely want this to be the same as the supergraph listen address",
+              "anyOf": [
+                {
+                  "description": "Socket address.",
+                  "type": "string"
+                },
+                {
+                  "description": "Unix socket.",
+                  "type": "string"
+                }
+              ]
+            },
+            "routes": {
+              "description": "The routes to transparently proxy through the router",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "path",
+                  "upstream"
+                ],
+                "properties": {
+                  "path": {
+                    "description": "The path spec to proxy",
+                    "type": "string"
+                  },
+                  "upstream": {
+                    "description": "The URI to proxy the request to as-is",
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "additionalProperties": false

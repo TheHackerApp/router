@@ -24,6 +24,7 @@ headers = "0.3"
 http = "0.2"
 hyper = { version = "0.14", features = ["client"] }
 hyper-rustls = { version = "0.24", features = ["http1", "http2"] }
+multimap = "0.9"
 opentelemetry-http = "0.9"
 opentelemetry_api = "0.20.0"
 pin-project-lite = "0.2"

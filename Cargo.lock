@@ -4500,6 +4500,7 @@ dependencies = [
  "http 0.2.11",
  "hyper",
  "hyper-rustls",
+ "multimap 0.9.1",
  "opentelemetry-http",
  "opentelemetry_api",
  "pin-project-lite",

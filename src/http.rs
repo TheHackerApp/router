@@ -3,7 +3,7 @@
 //!
 //! Source: https://github.com/apollographql/router/blob/da64c28/apollo-router/src/services/http/service.rs
 
-use apollo_router::Context;
+use apollo_router::{services::router, Context};
 use futures::{
     future::{BoxFuture, TryFutureExt},
     Stream,
@@ -33,6 +33,15 @@ pub struct Request {
     pub request: http::Request<Body>,
 }
 
+impl From<router::Request> for Request {
+    fn from(req: router::Request) -> Self {
+        Self {
+            request: req.router_request,
+            context: req.context,
+        }
+    }
+}
+
 pub trait RequestBuilderExt {
     /// Create a new request with a body
     fn body_with_context(self, body: Body, context: Context) -> Result<Request, http::Error>;
@@ -58,6 +67,15 @@ impl RequestBuilderExt for http::request::Builder {
 pub struct Response {
     pub context: Context,
     pub response: http::Response<Body>,
+}
+
+impl From<Response> for router::Response {
+    fn from(resp: Response) -> Self {
+        let mut router_response = router::Response::from(resp.response);
+        router_response.context = resp.context;
+
+        router_response
+    }
 }
 
 #[derive(Clone)]
