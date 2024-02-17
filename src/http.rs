@@ -4,6 +4,7 @@
 //! Source: https://github.com/apollographql/router/blob/da64c28/apollo-router/src/services/http/service.rs
 
 use apollo_router::{services::router, Context};
+use async_compression::tokio::write::{BrotliEncoder, GzipEncoder, ZlibEncoder};
 use futures::{
     future::{BoxFuture, TryFutureExt},
     Stream,
@@ -14,6 +15,7 @@ use hyper_rustls::{ConfigBuilderExt, HttpsConnector};
 use opentelemetry_api::global::get_text_map_propagator;
 use pin_project_lite::pin_project;
 use std::{io, task::Poll, time::Duration};
+use tokio::io::AsyncWriteExt;
 use tower::{BoxError, Service, ServiceBuilder};
 use tower_http::decompression::{Decompression, DecompressionBody, DecompressionLayer};
 use tracing::Instrument;
@@ -200,15 +202,25 @@ impl Service<Request> for Client {
     }
 }
 
+macro_rules! encode {
+    ($body:expr => $encoder:ident) => {{
+        let mut encoder = $encoder::new(Vec::new());
+        encoder.write_all($body).await?;
+        encoder.shutdown().await?;
+
+        Ok(encoder.into_inner().into())
+    }};
+}
+
 async fn compress(body: Bytes, headers: &HeaderMap) -> Result<Bytes, BoxError> {
     let content_encoding = headers
         .get(&CONTENT_ENCODING)
         .map(|header| header.to_str())
         .transpose()?;
     match content_encoding {
-        Some("br") => todo!(),
-        Some("gzip") => todo!(),
-        Some("deflate") => todo!(),
+        Some("br") => encode!(&body => BrotliEncoder),
+        Some("gzip") => encode!(&body => GzipEncoder),
+        Some("deflate") => encode!(&body => ZlibEncoder),
         Some("identity") | None => Ok(body),
         Some(encoding) => {
             tracing::error!(%encoding, "unknown content-encoding value");
