@@ -56,60 +56,20 @@ impl Plugin for Authentication {
         let client = self.client.clone();
         let upstream = self.upstream.clone();
 
-        let handler = move |mut req: router::Request| {
+        let handler = move |req: router::Request| {
             let mut client = client.clone();
-            let mut upstream = Url::clone(&upstream);
+            let upstream = upstream.clone();
 
             async move {
-                {
-                    let headers = req.router_request.headers();
-                    let mut pairs = upstream.query_pairs_mut();
-
-                    if let Some(auth) = headers.typed_get::<Authorization<Bearer>>() {
-                        pairs.append_pair("token", auth.token());
+                match fetch_context(req, &upstream, &mut client).await? {
+                    Ok((req, scope, user)) => {
+                        req.context
+                            .insert(AUTHENTICATION_SCOPE_CONTEXT_KEY, scope)?;
+                        req.context.insert(AUTHENTICATION_USER_CONTEXT_KEY, user)?;
+                        Ok(ControlFlow::Continue(req))
                     }
-
-                    if let Some(slug) = headers.typed_get::<EventSlug>() {
-                        pairs.append_pair("slug", &slug);
-                    } else if let Some(domain) = headers.typed_get::<EventDomain>() {
-                        pairs.append_pair("domain", &domain);
-                    } else {
-                        return Ok(ControlFlow::Break(req.respond_invalid(
-                            "could not determine event, pass Event-Slug or Event-Domain headers",
-                        )?));
-                    }
+                    Err(e) => Ok(ControlFlow::Break(e)),
                 }
-
-                let Response { response, context } = client
-                    .call(
-                        http::Request::builder()
-                            .uri(upstream.as_str())
-                            .method(Method::GET)
-                            .context(req.context)?,
-                    )
-                    .await?;
-                req.context = context;
-
-                let (parts, body) = response.into_parts();
-                if !parts.status.is_success() {
-                    let bytes = hyper::body::aggregate(body).await?;
-                    let response = serde_json::from_reader::<_, ApiError>(bytes.reader())?;
-
-                    return Ok(ControlFlow::Break(
-                        req.respond(response.message, parts.status)?,
-                    ));
-                }
-
-                match Scope::try_from(&parts.headers) {
-                    Ok(s) => req.context.insert(AUTHENTICATION_SCOPE_CONTEXT_KEY, s)?,
-                    Err(e) => return Ok(ControlFlow::Break(req.respond_invalid(e.to_string())?)),
-                };
-                match User::try_from(&parts.headers) {
-                    Ok(u) => req.context.insert(AUTHENTICATION_USER_CONTEXT_KEY, u)?,
-                    Err(e) => return Ok(ControlFlow::Break(req.respond_invalid(e.to_string())?)),
-                };
-
-                Ok(ControlFlow::Continue(req))
             }
         };
 
@@ -146,6 +106,63 @@ impl Plugin for Authentication {
             .service(service)
             .boxed()
     }
+}
+
+/// Retrieve the request context from the identity service
+pub(crate) async fn fetch_context(
+    mut req: router::Request,
+    upstream: &Url,
+    client: &mut Client,
+) -> Result<Result<(router::Request, Scope, User), router::Response>, BoxError> {
+    let mut upstream = Url::clone(upstream);
+
+    {
+        let headers = req.router_request.headers();
+        let mut pairs = upstream.query_pairs_mut();
+
+        if let Some(auth) = headers.typed_get::<Authorization<Bearer>>() {
+            pairs.append_pair("token", auth.token());
+        }
+
+        if let Some(slug) = headers.typed_get::<EventSlug>() {
+            pairs.append_pair("slug", &slug);
+        } else if let Some(domain) = headers.typed_get::<EventDomain>() {
+            pairs.append_pair("domain", &domain);
+        } else {
+            return Ok(Err(req.respond_invalid(
+                "could not determine event, pass Event-Slug or Event-Domain headers",
+            )?));
+        }
+    }
+
+    let Response { response, context } = client
+        .call(
+            http::Request::builder()
+                .uri(upstream.as_str())
+                .method(Method::GET)
+                .context(req.context)?,
+        )
+        .await?;
+    req.context = context;
+
+    let (parts, body) = response.into_parts();
+    if !parts.status.is_success() {
+        let bytes = hyper::body::aggregate(body).await?;
+        let response = serde_json::from_reader::<_, ApiError>(bytes.reader())?;
+
+        return Ok(Err(req.respond(response.message, parts.status)?));
+    }
+
+    let scope = match Scope::try_from(&parts.headers) {
+        Ok(s) => s,
+        Err(e) => return Ok(Err(req.respond_invalid(e.to_string())?)),
+    };
+    let user = match User::try_from(&parts.headers) {
+        Ok(u) => u,
+        Err(e) => return Ok(Err(req.respond_invalid(e.to_string())?)),
+    };
+
+    Ok(Ok((req, scope, user)))
 }
 
 #[derive(Debug, Deserialize)]

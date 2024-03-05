@@ -2001,6 +2001,38 @@
             }
           }
         },
+        "thehackerapp.current_user": {
+          "type": "object",
+          "required": [
+            "listen",
+            "path",
+            "upstream"
+          ],
+          "properties": {
+            "listen": {
+              "description": "The address where the proxy should listen. You'll likely want this to be the same as the supergraph listen address",
+              "anyOf": [
+                {
+                  "description": "Socket address.",
+                  "type": "string"
+                },
+                {
+                  "description": "Unix socket.",
+                  "type": "string"
+                }
+              ]
+            },
+            "path": {
+              "description": "The path where the route should be served",
+              "type": "string"
+            },
+            "upstream": {
+              "description": "The upstream server for getting authentication info",
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
         "thehackerapp.proxy": {
           "type": "object",
           "required": [
