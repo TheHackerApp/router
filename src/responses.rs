@@ -25,37 +25,32 @@ macro_rules! impl_responder {
         impl Responder for ::apollo_router::services::$module::Request {
             type Response = ::apollo_router::services::$module::Response;
 
-            impl_responder!(@internal $module $($rest)*);
+            fn respond<S>(self, message: S, code: ::http::StatusCode) -> Result<Self::Response, BoxError>
+            where
+                S: Into<String>,
+            {
+                let builder = ::apollo_router::services::$module::Response::builder()
+                    .error(build_error(message, code))
+                    .status_code(code);
+                impl_responder!(@internal builder, self.context; $($rest)*)
+            }
         }
     };
-    (@internal $module:ident) => {
-        fn respond<S>(self, message: S, code: StatusCode) -> Result<Self::Response, BoxError>
-        where
-            S: Into<String>,
-        {
-            ::apollo_router::services::$module::Response::builder()
-                .error(build_error(message, code))
-                .status_code(code)
-                .context(self.context)
-                .build()
-        }
-    };
-    (@internal $module:ident infallible) => {
-        fn respond<S>(self, message: S, code: StatusCode) -> Result<Self::Response, BoxError>
-        where
-            S: Into<String>,
-        {
-            Ok(::apollo_router::services::$module::Response::builder()
-                .error(build_error(message, code))
-                .status_code(code)
-                .context(self.context)
-                .build())
-        }
+    (@internal $builder:expr, $context:expr; headers $($rest:tt)*) => {{
+        let with_header = $builder.header(::http::header::CONTENT_TYPE, "application/json");
+        impl_responder!(@internal with_header, $context; $($rest)*)
+    }};
+    (@internal $builder:expr, $context:expr; infallible) => {{
+        let value = $builder.context($context).build();
+        Ok(value)
+    }};
+    (@internal $builder:expr, $context:expr;) => {
+        $builder.context($context).build()
     };
 }
 
-impl_responder!(router);
-impl_responder!(supergraph);
+impl_responder!(router headers);
+impl_responder!(supergraph headers);
 impl_responder!(subgraph infallible);
 
 fn build_error<S>(message: S, code: StatusCode) -> graphql::Error
