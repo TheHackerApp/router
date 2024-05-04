@@ -4,22 +4,18 @@ name = "router"
 version = "0.1.0"
 edition = "2021"
 
-[workspace]
-members = [
-    "xtask",
-]
-
 [[bin]]
 name = "router"
 path = "src/main.rs"
 
 [dependencies]
-anyhow.workspace = true
+anyhow = "1"
 apollo-router = { git = "ssh://git@github.com/TheHackerApp/apollo-router.git", branch = "main" }
 async-compression = { version = "0.4", features = ["tokio", "brotli", "gzip", "deflate"] }
 async-trait = "0.1"
 context = { version = "0.5", features = ["headers"], registry = "wafflehacks" }
 futures = "0.3"
+graphql-hive-router = { git = "https://github.com/kamilkisiela/graphql-hive", branch = "main", version = "0.0.1" }
 headers = "0.3"
 http = "0.2"
 hyper = { version = "0.14", features = ["client"] }
@@ -44,8 +40,9 @@ url = { version = "2.5", features = ["serde"] }
 serde_json = "1"
 tokio = { version = "1", features = ["macros"] }
 
-[workspace.dependencies]
-anyhow = "1"
-
 [profile.release]
 panic = "abort"
+
+[patch.crates-io]
+apollo-router = { git = "ssh://git@github.com/TheHackerApp/apollo-router.git", branch = "main" }
+
