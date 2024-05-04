@@ -1,0 +1,11 @@
+---
+extends: default
+
+rules:
+  float-values:
+    level: error
+    require-numeral-before-decimal: true
+  line-length: disable
+  octal-values:
+    level: error
+    forbid-implicit-octal: true

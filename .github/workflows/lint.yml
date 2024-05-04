@@ -1,0 +1,44 @@
+---
+name: Lint
+
+"on":
+  - push
+
+jobs:
+  yaml:
+    name: YAML
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install yamllint
+        run: pipx install yamllint
+
+      - run: yamllint -s -f github .
+
+  format:
+    name: Format
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: TheHackerApp/setup-rust@main
+        with:
+          ssh-private-key: |
+            ${{ secrets.SHIPYARD_SSH_KEY }}
+            ${{ secrets.APOLLO_ROUTER_DEPLOY_KEY }}
+          token: ${{ secrets.SHIPYARD_TOKEN }}
+
+      - run: cargo fmt --all --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: TheHackerApp/setup-rust@main
+        with:
+          ssh-private-key: |
+            ${{ secrets.SHIPYARD_SSH_KEY }}
+            ${{ secrets.APOLLO_ROUTER_DEPLOY_KEY }}
+          token: ${{ secrets.SHIPYARD_TOKEN }}
+
+      - run: cargo clippy -- -D warnings
