@@ -41,4 +41,16 @@ jobs:
             ${{ secrets.APOLLO_ROUTER_DEPLOY_KEY }}
           token: ${{ secrets.SHIPYARD_TOKEN }}
 
+      - uses: actions/cache@v4
+        with:
+          key: ${{ runner.os }}-clippy-${{ hashFiles('Cargo.lock') }}
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db
+            target/
+
+      - run: sudo apt-get install -y cmake protobuf-compiler
+
       - run: cargo clippy -- -D warnings
