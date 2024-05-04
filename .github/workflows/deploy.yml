@@ -1,0 +1,26 @@
+---
+name: Deploy
+
+"on":
+  - push
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: TheHackerApp/setup-ssh@main
+        with:
+          private-key: |
+            ${{ secrets.SHIPYARD_SSH_KEY }}
+            ${{ secrets.APOLLO_ROUTER_DEPLOY_KEY }}
+          host: |
+            ssh.shipyard.rs
+            github.com
+
+      - run: |
+          ssh-add -L
+          cat ~/.ssh/config
+          git config --global --list
