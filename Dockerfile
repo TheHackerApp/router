@@ -1,55 +1,72 @@
 # Use the rust build image from docker as our base
-FROM rust:1.75.0 as base
+FROM rust:1-bookworm as base
 
 # Set our working directory for the build
 WORKDIR /usr/src/router
 
 # Update our build image and install required packages
-RUN apt-get update && \
+RUN set -eux; \
+    apt-get update; \
     apt-get -y install  \
       clang \
+      libclang-dev \
       cmake \
-      mold \
-      nodejs \
-      npm \
-      protobuf-compiler && \
-    rm -rf /var/lib/apt/lists/*
+      protobuf-compiler
 
-# Add rustfmt since build requires it
-RUN rustup component add rustfmt
+RUN set -eux; \
+    mkdir -p ~/.ssh/; \
+    ssh-keyscan ssh.shipyard.rs >> ~/.ssh/known_hosts \
+    ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+ARG MOLD_VERSION=2.31.0
+RUN set -eux; \
+    wget -qO /tmp/mold.tar.gz https://github.com/rui314/mold/releases/download/v${MOLD_VERSION}/mold-${MOLD_VERSION}-x86_64-linux.tar.gz; \
+    tar -xf /tmp/mold.tar.gz -C /usr/local --strip-components 1; \
+    rm /tmp/mold.tar.gz
 
 # Use cargo-chef for better caching
-RUN cargo install cargo-chef --locked
+ARG CARGO_CHEF_VERSION=0.1.66
+RUN cargo install --locked cargo-chef@${CARGO_CHEF_VERSION}
 
+# Copy the router source to our cache environment and prepare the recipe to build with
 FROM base as planner
-
-# Copy the router source to our cache environment
 COPY . .
-
-# Prepare the recipe to build with
 RUN cargo chef prepare --recipe-path recipe.json
 
 FROM base as build
 
 # Build dependencies
 COPY --from=planner /usr/src/router/recipe.json recipe.json
-RUN --mount=type=ssh cargo chef cook --release --recipe-path recipe.json
+RUN --mount=type=cache,target=/root/.rustup \
+    --mount=type=cache,target=/root/.cargo/registry \
+    --mount=type=cache,target=/root/.cargo/git \
+    --mount=type=cache,target=/usr/src/router/target \
+    --mount=type=ssh \
+    --mount=type=secret,id=shipyard-token \
+    set -eux; \
+    export CARGO_REGISTRIES_WAFFLEHACKS_TOKEN=$(cat /run/secrets/shipyard-token); \
+    export CARGO_REGISTRIES_WAFFLEHACKS_CREDENTIAL_PROVIDER=cargo:token; \
+    export CARGO_NET_GIT_FETCH_WITH_CLI=true; \
+    cargo chef cook --release --recipe-path recipe.json
 
-# Copy the router source to our build environment
+# Copy the router source to our build environment and build
 COPY . .
-
-# Build and install the custom binary
-RUN cargo build --release
-
-# Make directories for config and schema
-RUN mkdir -p /dist/config && \
-    mkdir /dist/schema && \
-    mv target/release/router /dist
+RUN --mount=type=cache,target=/root/.rustup \
+    --mount=type=cache,target=/root/.cargo/registry \
+    --mount=type=cache,target=/root/.cargo/git \
+    --mount=type=cache,target=/usr/src/router/target \
+    --mount=type=ssh \
+    set -eux; \
+    cargo build --release --bin router; \
+    mkdir -p /dist/config; \
+    mkdir /dist/schema; \
+    objcopy --compress-debug-sections ./target/release/router /dist/router
 
 FROM debian:bookworm-slim
 
-RUN apt-get update &&  \
-    apt-get -y install ca-certificates && \
+RUN set -eux; \
+    apt-get update;  \
+    apt-get -y install ca-certificates; \
     rm -rf /var/lib/apt/lists/*
 
 # Copy in the required files from our build image
