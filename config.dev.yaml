@@ -1,0 +1,30 @@
+homepage:
+  enabled: false
+
+supergraph:
+  listen: "127.0.0.1:8000"
+  introspection: true
+  path: /graphql
+
+include_subgraph_errors:
+  all: true
+
+csrf:
+  unsafe_disabled: true
+
+plugins:
+  thehackerapp.authentication:
+    upstream: http://127.0.0.1:4243/context
+
+  thehackerapp.current_user:
+    listen: "127.0.0.1:8000"
+    path: /me
+    upstream: http://127.0.0.1:4243/context
+
+  thehackerapp.proxy:
+    listen: "127.0.0.1:8000"
+    routes:
+      - path: /oauth/*rest
+        upstream: http://127.0.0.1:4243
+
+  experimental.expose_query_plan: true
