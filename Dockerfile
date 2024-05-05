@@ -1,5 +1,5 @@
 # Use the rust build image from docker as our base
-FROM rust:1-bookworm as base
+FROM rust:1.76-bookworm as base
 
 # Set our working directory for the build
 WORKDIR /usr/src/router
