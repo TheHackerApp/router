@@ -1,0 +1,48 @@
+# fly.toml app configuration file generated for tha-router on 2024-05-04T11:57:31-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "tha-router"
+primary_region = "sea"
+
+[deploy]
+strategy = "rolling"
+
+[env]
+LISTEN_ADDRESS = "[::]:8000"
+
+APOLLO_TELEMETRY_DISABLED = "true"
+APOLLO_TRACING_DISABLED = "true"
+APOLLO_METRICS_DISABLED = "true"
+
+[http_service]
+internal_port = 8000
+force_https = true
+
+auto_stop_machines = true
+auto_start_machines = true
+min_machines_running = 0
+
+processes = ["app"]
+
+[http_service.http_options]
+h2_backend = true
+
+[http_service.concurrency]
+type = "requests"
+hard_limit = 1000
+soft_limit = 750
+
+[[files]]
+guest_path = "/dist/config.yaml"
+secret_name = "ROUTER_CONFIG"
+
+[[metrics]]
+port = 9090
+path = "/metrics"
+
+[[vm]]
+cpus = 1
+cpu_kind = "shared"
+memory = "512mb"
