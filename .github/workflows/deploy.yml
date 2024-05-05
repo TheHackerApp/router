@@ -60,3 +60,23 @@ jobs:
 
           cache-to: type=gha,mode=max
           cache-from: type=gha
+
+  launch:
+    name: Launch
+    runs-on: ubuntu-22.04
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - build
+    concurrency:
+      group: deploy-launch
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+
+      - name: Generate commit SHA
+        id: sha
+        run: echo "value=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - run: flyctl deploy --remote-only --image ${{ env.IMAGE_REGISTRY }}/service:deploy-${{ steps.sha.outputs.value }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_DEPLOY_TOKEN }}
