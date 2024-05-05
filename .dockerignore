@@ -1,1 +1,7 @@
-target/**
+target/
+.github/
+.env
+fly.toml
+config.dev.yaml
+config.yaml
+configuration.schema.json
