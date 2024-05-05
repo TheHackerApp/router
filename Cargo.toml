@@ -24,11 +24,14 @@ multimap = "0.9"
 opentelemetry-http = "0.9"
 opentelemetry_api = "0.20.0"
 pin-project-lite = "0.2"
+reqwest = { version = "0.11.24", default-features = false, features = ["json", "rustls-tls"] }
 rustls = "0.21"
 schemars = { version = "0.8", features = ["url"] }
 serde = "1"
 serde_json = "1"
+sha2 = "0.10.8"
 tokio = { version = "1", default-features = false, features = ["io-util"] }
+tokio-stream = "0.1.14"
 tower = { version = "0.4", default-features = false }
 tower-http = { version = "0.4", features = ["compression-br", "compression-deflate", "compression-gzip", "decompression-br", "decompression-deflate", "decompression-gzip"] }
 tracing = "0.1"
