@@ -34,6 +34,15 @@ type = "requests"
 hard_limit = 1000
 soft_limit = 750
 
+[[http_service.checks]]
+protocol = "http"
+method = "GET"
+path = "/health"
+
+interval = "30s"
+grace_period = "10s"
+timeout = "5s"
+
 [[files]]
 guest_path = "/dist/config.yaml"
 secret_name = "ROUTER_CONFIG"
