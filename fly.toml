@@ -45,4 +45,4 @@ path = "/metrics"
 [[vm]]
 cpus = 1
 cpu_kind = "shared"
-memory = "512mb"
+memory = "256mb"
