@@ -18,7 +18,7 @@ futures = "0.3"
 graphql-hive-router = { git = "https://github.com/kamilkisiela/graphql-hive", branch = "main", version = "0.0.1" }
 headers = "0.3"
 http = "0.2"
-hyper = { version = "0.14", features = ["client"] }
+hyper = { version = "0.14", features = ["client", "http1", "http2"] }
 hyper-rustls = { version = "0.24", features = ["http1", "http2"] }
 multimap = "0.9"
 opentelemetry-http = "0.9"

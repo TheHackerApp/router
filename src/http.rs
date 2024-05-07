@@ -106,6 +106,7 @@ impl Client {
             .wrap_connector(http_connector);
 
         let client = hyper::Client::builder()
+            .http2_only(true)
             .pool_idle_timeout(Some(Duration::from_secs(5)))
             .build(https_connector);
 
