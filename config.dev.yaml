@@ -1,31 +1,69 @@
 ---
+supergraph:
+  listen: "${env.LISTEN_ADDRESS}"
+  path: /graphql
+
+  introspection: true
+
+health_check:
+  enabled: true
+  listen: "${env.LISTEN_ADDRESS}"
+  path: /health
+
 homepage:
   enabled: false
-
-supergraph:
-  listen: "127.0.0.1:8000"
-  introspection: true
-  path: /graphql
 
 include_subgraph_errors:
   all: true
 
+override_subgraph_url:
+  identity: "${env.IDENTITY_ADDRESS}/graphql"
+
+cors:
+  match_origins:
+    - '.*'
+  allow_credentials: true
+  allow_headers:
+    - x-apollo-operation-name
+    - apollo-require-preflight
+    - content-type
+    - event-domain
+    - event-slug
+    - authorization
+
 csrf:
-  unsafe_disabled: true
+  required_headers:
+    - cf-ray
+    - x-apollo-operation-name
+    - apollo-require-preflight
+
+traffic_shaping:
+  all:
+    experimental_http2: http2only
 
 plugins:
   thehackerapp.authentication:
-    upstream: http://127.0.0.1:4243/context
+    upstream: "${env.IDENTITY_ADDRESS}/context"
 
   thehackerapp.current_user:
-    listen: "127.0.0.1:8000"
+    listen: "${env.LISTEN_ADDRESS}"
     path: /me
-    upstream: http://127.0.0.1:4243/context
+    upstream: "${env.IDENTITY_ADDRESS}/context"
 
   thehackerapp.proxy:
-    listen: "127.0.0.1:8000"
+    listen: "${env.LISTEN_ADDRESS}"
     routes:
       - path: /oauth/*rest
-        upstream: http://127.0.0.1:4243
+        upstream: "${env.IDENTITY_ADDRESS}"
 
   experimental.expose_query_plan: true
+
+telemetry:
+  instrumentation:
+    spans:
+      mode: spec_compliant
+  exporters:
+    logging:
+      stdout:
+        enabled: true
+        format: text
