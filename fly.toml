@@ -18,6 +18,8 @@ APOLLO_TELEMETRY_DISABLED = "true"
 APOLLO_TRACING_DISABLED = "true"
 APOLLO_METRICS_DISABLED = "true"
 
+OTEL_SERVICE_NAME = "api"
+
 [http_service]
 internal_port = 8000
 force_https = true
