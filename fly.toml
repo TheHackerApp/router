@@ -12,7 +12,7 @@ strategy = "rolling"
 [env]
 LISTEN_ADDRESS = "[::]:8000"
 
-IDENTITY_ADDRESS = "http://tha-identity.flycast:4243"
+IDENTITY_ADDRESS = "http://tha-identity.flycast"
 
 APOLLO_TELEMETRY_DISABLED = "true"
 APOLLO_TRACING_DISABLED = "true"
