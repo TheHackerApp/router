@@ -18,6 +18,7 @@ include_subgraph_errors:
 
 override_subgraph_url:
   identity: "${env.IDENTITY_ADDRESS}/graphql"
+  portal: "${env.PORTAL_ADDRESS}/graphql"
 
 cors:
   match_origins:

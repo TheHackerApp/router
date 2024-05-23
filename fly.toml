@@ -13,6 +13,7 @@ strategy = "rolling"
 LISTEN_ADDRESS = "[::]:8000"
 
 IDENTITY_ADDRESS = "http://tha-identity.flycast"
+PORTAL_ADDRESS = "http://tha-portal.flycast"
 
 APOLLO_TELEMETRY_DISABLED = "true"
 APOLLO_TRACING_DISABLED = "true"
